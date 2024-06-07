@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Web Server Service
+  product_nginx:
+    image: nginx:alpine
+    container_name: product_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    depends_on:
+      - product_app
+      - product_db
+
+  # Database Service
+  product_db:
+    image: mysql
+    container_name: product_db
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: blog
+      MYSQL_ROOT_PASSWORD: password
+
+  # Application Service
+  product_app:
+    container_name: product_app
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/var/www
+    ports:
+      - "9000:9000"
+    working_dir: /var/www
+
+  # phpMyAdmin Service
+  product_phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: product_phpmyadmin
+    ports:
+      - "3400:80"
+    depends_on:
+      - product_db
